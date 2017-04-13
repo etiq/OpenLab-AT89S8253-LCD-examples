@@ -1,0 +1,139 @@
+C51 COMPILER V9.55   MAIN                                                                  06/03/2016 13:13:17 PAGE 1   
+
+
+C51 COMPILER V9.55, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\main
+                    -.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          /*  Name     : main.c
+   2           *  Purpose  : Main file for  a demo project for the implentation of LCD interfacing with AT89S8253 contro
+             -llers.
+   3                         the project  file contains the functions to write a character,write a string in the LCD.Spe
+             -cific 
+   4                         functions are there to write string and character in the desired location by specifying the row 
+   5                         and column in the LCD.
+   6                         
+   7           *  Author   : Etiq Technologies
+   8           *  Date     : 04/05/2016 
+   9           *  Revision : None
+  10           */
+  11          
+  12          
+  13          
+  14          #include <REG8253.H>                     
+  15          #include "delay.h"                          //header file for delay library
+  16          
+  17          
+  18          /* access the LCD in data write mode and 
+  19          command write mode with RS=1,RW=0 & RS=0,RW=0 respectively */
+  20          #define LCD_command_mode(); P3_1=0;P3_2=0;
+  21          #define LCD_datawrite_mode(); P3_1=0;P3_2=1; 
+  22          
+  23          /* defines the dataport and control port(Enable pin) */
+  24          #define DATA_PORT P2
+  25          #define ENABLE_PIN P3_0
+  26          
+  27          /* function to write commands to the LCD command register */
+  28          void LCD_cmd(unsigned char command)
+  29          {
+  30   1      LCD_command_mode();                    //access in command mode
+  31   1      DATA_PORT=command;                     //command in data port
+  32   1        
+  33   1      /* LCD enabled with high to low transition in enable  pin
+  34   1         latches the command data in to the command register of LCD*/
+  35   1      ENABLE_PIN=1;
+  36   1      Delay_us(5000); 
+  37   1      ENABLE_PIN=0; 
+  38   1      }
+  39          
+  40          /*function to display a single character to the LCD
+  41          The character is displayed at the present cursor postion*/
+  42          void LCD_write_char(unsigned char character)
+  43          {
+  44   1        LCD_datawrite_mode();               //access in data write mode
+  45   1        DATA_PORT=character;                //data in the data port
+  46   1        
+  47   1      /* LCD enabled with high to low transition in enable  pin
+  48   1         latches the data in to the data register of LCD*/
+  49   1        
+  50   1        ENABLE_PIN=1;
+  51   1        Delay_us(5000); 
+  52   1        ENABLE_PIN=0; 
+C51 COMPILER V9.55   MAIN                                                                  06/03/2016 13:13:17 PAGE 2   
+
+  53   1      }
+  54          
+  55          /*function to initialise the LCD in 8 bit 
+  56          mode with initialisation commands*/
+  57          void LCD_init()
+  58          {
+  59   1       LCD_cmd(0x38);                                  /* LCD command - 5x7 matrix                              
+             -   */
+  60   1       LCD_cmd(0x83);                                  /* LCD command - Force cursor to the begining of first li
+             -ne */
+  61   1       LCD_cmd(0x0C);                                  /* LCD command - Display ON, cursor OFF                  
+             -   */
+  62   1       LCD_cmd(0x01);                                  /* LCD command - Clear display                           
+             -   */  
+  63   1       Delay_us(10000);
+  64   1      }
+  65          
+  66          /*function to write a string to the LCD
+  67             at present cursor location */
+  68          void LCD_write_text(unsigned char *ptr)
+  69          {
+  70   1      while(*ptr)
+  71   1      {
+  72   2      LCD_write_char(*ptr);
+  73   2      ptr++;
+  74   2      }
+  75   1      }
+  76          
+  77          /* function to write string at the specified cursor position */
+  78          void LCD_write_text_at(unsigned char row,unsigned char column ,char *string)
+  79          {
+  80   1      if(row&0x01)              //if 1st row or-ing the column position
+  81   1      LCD_cmd(0x80|column);
+  82   1      else if(row&0x02)        // if  2nd row or-ing the column position
+  83   1      LCD_cmd(0xC0|column);
+  84   1      LCD_write_text(string);   //writes the text
+  85   1      }
+  86          
+  87          void LCD_write_char_at(unsigned char row,unsigned char column,unsigned char character)
+  88          {
+  89   1      if(row&0x01)                 //if 1st row or-ing the column position
+  90   1      LCD_cmd(0x80|column);
+  91   1      else if(row&0x02)          // if  2nd row or-ing the column position
+  92   1      LCD_cmd(0xC0|column);
+  93   1      
+  94   1      LCD_write_char(character);   //writes the character
+  95   1      }
+  96          
+  97          /*main function */
+  98          void main()
+  99          {
+ 100   1      LCD_init();                     // initialises the LCD
+ 101   1        
+ 102   1      LCD_write_text_at(2,5,"hellooo"); //writes haiii at 2nd row third column
+ 103   1      LCD_write_char_at(1,3,'K');     //writes S at 1 row 3rd column
+ 104   1      while(1);                       //infinite loop
+ 105   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    203    ----
+   CONSTANT SIZE    =      8    ----
+C51 COMPILER V9.55   MAIN                                                                  06/03/2016 13:13:17 PAGE 3   
+
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----      11
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
